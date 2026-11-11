@@ -10,7 +10,7 @@ Sign-in is email and password through Firebase Auth. A profile in Firestore stor
 - **Staff.** Sees every report, changes status, and claims an unclaimed report. Claiming a submitted report moves it to In Progress.
 - **Admin.** Does everything staff can do, and can assign an unclaimed report to a staff member. Admins are not created from the register page.
 
-A report has a title, category, location, description, and an optional photo. Photos upload to Cloudinary with an unsigned preset, so the API secret stays out of the app. The person working on a report is stored on the report. In Progress with nobody on it shows as Unassigned.
+A report has a title, category, location, description, and an optional photo. Photos upload to Cloudinary with an unsigned preset, so the API secret stays out of the app. Profile photos use the same Cloudinary preset as report photos. The person working on a report is stored on the report. In Progress with nobody on it shows as Unassigned.
 
 Staff and admin accounts are created by the seed script, not by registering in the app.
 

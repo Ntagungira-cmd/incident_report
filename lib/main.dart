@@ -59,7 +59,12 @@ class _AppState extends State<App> {
           scaffoldMessengerKey: _messenger,
           home: BlocBuilder<AuthBloc, AuthState>(
             buildWhen: (a, b) =>
-                a.status != b.status || a.user?.uid != b.user?.uid,
+                a.status != b.status ||
+                a.user?.uid != b.user?.uid ||
+                a.user?.name != b.user?.name ||
+                a.user?.department != b.user?.department ||
+                a.user?.location != b.user?.location ||
+                a.user?.photoUrl != b.user?.photoUrl,
             builder: (_, state) => switch (state.status) {
               AuthStatus.unknown => const Scaffold(
                 body: Center(child: CircularProgressIndicator()),

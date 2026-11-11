@@ -4,19 +4,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/auth_bloc.dart';
 import '../../models/app_user.dart';
 import '../widgets/user_avatar.dart';
+import 'edit_profile_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final user = context.read<AppUser>();
+    final user = context.watch<AppUser>();
     return SafeArea(
       child: ListView(
         padding: const EdgeInsets.fromLTRB(20, 20, 20, 96),
         children: [
           const SizedBox(height: 12),
-          Center(child: UserAvatar(user.name, radius: 44)),
+          Center(
+            child: UserAvatar(user.name, photoUrl: user.photoUrl, radius: 44),
+          ),
           const SizedBox(height: 12),
           Text(
             user.name,
@@ -57,6 +60,12 @@ class ProfilePage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: () => EditProfilePage.open(context, user),
+            icon: const Icon(Icons.edit_outlined),
+            label: const Text('Edit profile'),
+          ),
+          const SizedBox(height: 12),
           OutlinedButton.icon(
             onPressed: () =>
                 context.read<AuthBloc>().add(const SignOutRequested()),

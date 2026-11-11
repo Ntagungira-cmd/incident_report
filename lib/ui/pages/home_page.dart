@@ -15,7 +15,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.read<AppUser>();
+    final user = context.watch<AppUser>();
     final state = context.watch<ReportsBloc>().state;
     final theme = Theme.of(context);
     void seeAll() => context.read<NavCubit>().select(1);
@@ -43,7 +43,7 @@ class HomePage extends StatelessWidget {
                   ],
                 ),
               ),
-              UserAvatar(user.name),
+              UserAvatar(user.name, photoUrl: user.photoUrl),
             ],
           ),
           const SizedBox(height: 8),

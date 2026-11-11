@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../models/app_user.dart';
+import 'report_repository.dart';
 
 class AuthRepository {
   AuthRepository({FirebaseAuth? auth, FirebaseFirestore? db})
@@ -72,6 +75,36 @@ class AuthRepository {
   }
 
   Future<void> signOut() => _auth.signOut();
+
+  /// Name, department, location, and an optional new photo. Email and role stay.
+  Future<AppUser> updateProfile({
+    required AppUser user,
+    required String name,
+    required String department,
+    required String location,
+    Uint8List? photo,
+  }) async {
+    final photoUrl = photo == null
+        ? user.photoUrl
+        : await uploadReportPhoto(photo, 'avatar-${user.uid}');
+    final updated = AppUser(
+      uid: user.uid,
+      name: name,
+      email: user.email,
+      department: department,
+      location: location,
+      role: user.role,
+      photoUrl: photoUrl,
+    );
+    await _db.doc('users/${user.uid}').update({
+      'name': name,
+      'department': department,
+      'location': location,
+      'photoUrl': ?photoUrl,
+    });
+    await _auth.currentUser?.updateDisplayName(name);
+    return updated;
+  }
 
   /// Staff who can be given an unclaimed report. Admins are not in this list.
   Future<List<AppUser>> listStaff() async {

@@ -14,7 +14,7 @@ class MyReportsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final user = context.read<AppUser>();
+    final user = context.watch<AppUser>();
     final state = context.watch<ReportsBloc>().state;
     final filter = context.watch<ReportFilterCubit>().state;
     final visible = filter.apply(state.reports);
@@ -107,7 +107,7 @@ class _ProfileCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                UserAvatar(user.name, radius: 30),
+                UserAvatar(user.name, photoUrl: user.photoUrl, radius: 30),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(

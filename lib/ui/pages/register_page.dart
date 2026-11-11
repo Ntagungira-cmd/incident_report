@@ -2,16 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/auth_bloc.dart';
+import '../../models/app_user.dart';
 import '../validators.dart';
-
-const _departments = [
-  'Computer Science',
-  'Engineering',
-  'Business',
-  'Education',
-  'Health Sciences',
-  'Facilities',
-];
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -104,7 +96,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           prefixIcon: Icon(Icons.school_outlined),
                         ),
                         items: [
-                          for (final department in _departments)
+                          for (final department in departments)
                             DropdownMenuItem(
                               value: department,
                               child: Text(department),
@@ -114,7 +106,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         onChanged: (_) {},
                         onSaved: (value) => _department = value,
                         validator: (value) =>
-                            value == null || !_departments.contains(value)
+                            value == null || !departments.contains(value)
                             ? 'Department is required'
                             : null,
                       ),

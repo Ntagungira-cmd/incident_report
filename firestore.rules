@@ -20,7 +20,18 @@ service cloud.firestore {
       allow create: if signedIn() && request.auth.uid == uid
         && request.resource.data.role == 'student';
       allow update: if signedIn() && request.auth.uid == uid
-        && request.resource.data.role == resource.data.role;
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['name', 'department', 'location', 'photoUrl'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.department is string
+        && request.resource.data.department.size() > 0
+        && request.resource.data.location is string
+        && request.resource.data.location.size() > 0
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['photoUrl'])
+            || request.resource.data.photoUrl is string);
     }
 
     function assigneeUnchanged() {

@@ -1,5 +1,14 @@
 enum UserRole { student, staff, admin }
 
+const departments = [
+  'Computer Science',
+  'Engineering',
+  'Business',
+  'Education',
+  'Health Sciences',
+  'Facilities',
+];
+
 class AppUser {
   const AppUser({
     required this.uid,
@@ -8,6 +17,7 @@ class AppUser {
     required this.department,
     required this.location,
     this.role = UserRole.student,
+    this.photoUrl,
   });
 
   final String uid;
@@ -16,6 +26,7 @@ class AppUser {
   final String department;
   final String location;
   final UserRole role;
+  final String? photoUrl;
 
   bool get isAdmin => role == UserRole.admin;
 
@@ -30,6 +41,7 @@ class AppUser {
     department: data['department'] as String? ?? '',
     location: data['location'] as String? ?? '',
     role: UserRole.values.asNameMap()[data['role']] ?? UserRole.student,
+    photoUrl: data['photoUrl'] as String?,
   );
 
   Map<String, dynamic> toMap() => {
@@ -38,5 +50,6 @@ class AppUser {
     'department': department,
     'location': location,
     'role': role.name,
+    'photoUrl': ?photoUrl,
   };
 }

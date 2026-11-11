@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -35,6 +37,20 @@ final class RegisterRequested extends AuthEvent {
 
 final class SignOutRequested extends AuthEvent {
   const SignOutRequested();
+}
+
+final class ProfileUpdateRequested extends AuthEvent {
+  const ProfileUpdateRequested({
+    required this.name,
+    required this.department,
+    required this.location,
+    this.photo,
+  });
+
+  final String name;
+  final String department;
+  final String location;
+  final Uint8List? photo;
 }
 
 enum AuthStatus { unknown, unauthenticated, authenticated }
@@ -81,6 +97,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       ),
     );
     on<SignOutRequested>((_, _) => _repo.signOut());
+    on<ProfileUpdateRequested>((e, emit) async {
+      final current = state.user;
+      if (current == null) return;
+      emit(AuthState(status: state.status, user: current, busy: true));
+      try {
+        final user = await _repo.updateProfile(
+          user: current,
+          name: e.name,
+          department: e.department,
+          location: e.location,
+          photo: e.photo,
+        );
+        emit(AuthState(status: AuthStatus.authenticated, user: user));
+      } catch (err) {
+        emit(
+          AuthState(status: state.status, user: current, error: _message(err)),
+        );
+      }
+    });
   }
 
   final AuthRepository _repo;
@@ -100,7 +135,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 
-  static String _message(Object e) => e is FirebaseException
-      ? (e.message ?? e.code)
-      : 'Something went wrong. Please try again.';
+  static String _message(Object e) => switch (e) {
+    FirebaseException(:final message, :final code) => message ?? code,
+    StateError(:final message) => message,
+    _ => 'Something went wrong. Please try again.',
+  };
 }
