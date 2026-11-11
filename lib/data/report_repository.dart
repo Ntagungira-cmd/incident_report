@@ -64,6 +64,22 @@ class ReportRepository {
           StatusChange(status, DateTime.now()).toMap(),
         ]),
       });
+
+  /// Take or hand an unclaimed report to [assignee]. Starting work moves it
+  /// to in progress.
+  Future<void> setAssignee(Report report, AppUser assignee) {
+    final data = <String, dynamic>{
+      'assigneeId': assignee.uid,
+      'assigneeName': assignee.name,
+    };
+    if (report.status == ReportStatus.submitted) {
+      data['status'] = ReportStatus.inProgress.name;
+      data['statusHistory'] = FieldValue.arrayUnion([
+        StatusChange(ReportStatus.inProgress, DateTime.now()).toMap(),
+      ]);
+    }
+    return _reports.doc(report.id).update(data);
+  }
 }
 
 /// Unsigned upload. The API secret stays out of the app.

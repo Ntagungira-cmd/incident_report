@@ -72,4 +72,14 @@ class AuthRepository {
   }
 
   Future<void> signOut() => _auth.signOut();
+
+  /// Staff who can be given an unclaimed report. Admins are not in this list.
+  Future<List<AppUser>> listStaff() async {
+    final snap = await _db
+        .collection('users')
+        .where('role', isEqualTo: UserRole.staff.name)
+        .get();
+    return [for (final doc in snap.docs) AppUser.fromMap(doc.id, doc.data())]
+      ..sort((a, b) => a.name.compareTo(b.name));
+  }
 }

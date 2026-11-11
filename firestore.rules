@@ -4,18 +4,46 @@ service cloud.firestore {
     function signedIn() {
       return request.auth != null;
     }
+    function role() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
     function isStaff() {
-      return signedIn()
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'staff';
+      return signedIn() && role() in ['staff', 'admin'];
+    }
+    function isAdmin() {
+      return signedIn() && role() == 'admin';
     }
 
     match /users/{uid} {
       allow read: if signedIn() && (request.auth.uid == uid || isStaff());
-      // Everyone registers as a student; staff are promoted from the console.
+      // Everyone registers as a student; staff and admins are seeded.
       allow create: if signedIn() && request.auth.uid == uid
         && request.resource.data.role == 'student';
       allow update: if signedIn() && request.auth.uid == uid
         && request.resource.data.role == resource.data.role;
+    }
+
+    function assigneeUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys()
+          .hasAny(['assigneeId', 'assigneeName']);
+    }
+    function openForClaim() {
+      return resource.data.status != 'resolved'
+        && resource.data.get('assigneeId', null) == null;
+    }
+    function claiming() {
+      return openForClaim()
+        && request.resource.data.assigneeId == request.auth.uid
+        && request.resource.data.assigneeName is string
+        && request.resource.data.assigneeName.size() > 0;
+    }
+    function assigning() {
+      return isAdmin()
+        && openForClaim()
+        && request.resource.data.assigneeId is string
+        && request.resource.data.assigneeName is string
+        && request.resource.data.assigneeName.size() > 0
+        && get(/databases/$(database)/documents/users/$(request.resource.data.assigneeId)).data.role == 'staff';
     }
 
     match /reports/{id} {
@@ -26,8 +54,10 @@ service cloud.firestore {
         && request.resource.data.title is string && request.resource.data.title.size() > 0
         && request.resource.data.description is string;
       allow update: if isStaff()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'statusHistory'])
-        && request.resource.data.status in ['submitted', 'inProgress', 'resolved'];
+        && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'statusHistory', 'assigneeId', 'assigneeName'])
+        && request.resource.data.status in ['submitted', 'inProgress', 'resolved']
+        && (assigneeUnchanged() || claiming() || assigning());
     }
   }
 }

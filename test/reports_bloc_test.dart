@@ -12,6 +12,7 @@ class FakeReportRepository implements ReportRepository {
   final reports = StreamController<List<Report>>();
   Object? updateError;
   final updates = <(String, ReportStatus)>[];
+  final assignees = <(String, String)>[];
 
   @override
   Stream<List<Report>> watch(AppUser user) => reports.stream;
@@ -20,6 +21,12 @@ class FakeReportRepository implements ReportRepository {
   Future<void> updateStatus(Report report, ReportStatus status) async {
     if (updateError != null) throw updateError!;
     updates.add((report.id, status));
+  }
+
+  @override
+  Future<void> setAssignee(Report report, AppUser assignee) async {
+    if (updateError != null) throw updateError!;
+    assignees.add((report.id, assignee.uid));
   }
 
   @override
@@ -44,6 +51,15 @@ Report report(String id, ReportStatus status) => Report(
   reporterId: 'u1',
   reporterName: 'Amina Hassan',
   createdAt: DateTime(2026, 10, 15),
+);
+
+const staff = AppUser(
+  uid: 'staff1',
+  name: 'Jean Habimana',
+  email: 'j@b.c',
+  department: 'Facilities',
+  location: 'Kigali',
+  role: UserRole.staff,
 );
 
 const user = AppUser(
@@ -100,6 +116,15 @@ void main() {
     ),
     expect: () => <ReportsState>[],
     verify: (_) => expect(repo.updates, [('1', ReportStatus.inProgress)]),
+  );
+
+  blocTest<ReportsBloc, ReportsState>(
+    'forwards assignee updates to the repository',
+    build: () => ReportsBloc(repo),
+    act: (bloc) =>
+        bloc.add(AssigneeSet(report('1', ReportStatus.submitted), staff)),
+    expect: () => <ReportsState>[],
+    verify: (_) => expect(repo.assignees, [('1', 'staff1')]),
   );
 
   blocTest<ReportsBloc, ReportsState>(

@@ -19,6 +19,12 @@ final class StatusUpdateRequested extends ReportsEvent {
   final ReportStatus status;
 }
 
+final class AssigneeSet extends ReportsEvent {
+  const AssigneeSet(this.report, this.assignee);
+  final Report report;
+  final AppUser assignee;
+}
+
 enum ReportsStatus { loading, ready, failure }
 
 class ReportsState {
@@ -54,16 +60,21 @@ class ReportsBloc extends Bloc<ReportsEvent, ReportsState> {
       try {
         await _repo.updateStatus(event.report, event.status);
       } catch (e) {
-        emit(
-          ReportsState(
-            status: state.status,
-            reports: state.reports,
-            error: '$e',
-          ),
-        );
+        _fail(emit, e);
+      }
+    });
+    on<AssigneeSet>((event, emit) async {
+      try {
+        await _repo.setAssignee(event.report, event.assignee);
+      } catch (e) {
+        _fail(emit, e);
       }
     });
   }
+
+  void _fail(Emitter<ReportsState> emit, Object error) => emit(
+    ReportsState(status: state.status, reports: state.reports, error: '$error'),
+  );
 
   final ReportRepository _repo;
 }

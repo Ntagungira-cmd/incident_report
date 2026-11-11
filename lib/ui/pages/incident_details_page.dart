@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bloc/reports_bloc.dart';
+import '../../data/auth_repository.dart';
 import '../../models/app_user.dart';
 import '../../models/report.dart';
 import '../format.dart';
@@ -94,6 +95,13 @@ class IncidentDetailsPage extends StatelessWidget {
                             Icons.person_outline,
                             'Reported by ${report.reporterName}',
                           ),
+                          if (report.assigneeLabel case final label?)
+                            _Meta(
+                              Icons.assignment_ind_outlined,
+                              label == 'Unassigned'
+                                  ? 'Unassigned'
+                                  : 'Assigned to $label',
+                            ),
                         ],
                       ),
                     ),
@@ -133,16 +141,7 @@ class IncidentDetailsPage extends StatelessWidget {
                 ],
               ),
         bottomNavigationBar: report != null && user.isStaff
-            ? SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                  child: FilledButton.icon(
-                    onPressed: () => _changeStatus(context, report),
-                    icon: const Icon(Icons.sync_alt),
-                    label: const Text('Change status'),
-                  ),
-                ),
-              )
+            ? _actions(context, user, report)
             : null,
       ),
     );
@@ -170,6 +169,89 @@ class IncidentDetailsPage extends StatelessWidget {
       ),
     );
     if (status != null) bloc.add(StatusUpdateRequested(report, status));
+  }
+
+  Future<void> _assign(BuildContext context, Report report) async {
+    final bloc = context.read<ReportsBloc>();
+    List<AppUser> staff;
+    try {
+      staff = await context.read<AuthRepository>().listStaff();
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not load staff: $e')));
+      return;
+    }
+    if (!context.mounted) return;
+    final assignee = await showModalBottomSheet<AppUser>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: staff.isEmpty
+            ? const Padding(
+                padding: EdgeInsets.all(24),
+                child: Text('No staff to assign'),
+              )
+            : ListView(
+                shrinkWrap: true,
+                children: [
+                  for (final member in staff)
+                    ListTile(
+                      title: Text(member.name),
+                      subtitle: Text(member.department),
+                      onTap: () => Navigator.pop(context, member),
+                    ),
+                ],
+              ),
+      ),
+    );
+    if (assignee != null) bloc.add(AssigneeSet(report, assignee));
+  }
+
+  Widget _actions(BuildContext context, AppUser user, Report report) {
+    final canTake =
+        report.assigneeId == null && report.status != ReportStatus.resolved;
+    final changeStatus = canTake
+        ? OutlinedButton.icon(
+            onPressed: () => _changeStatus(context, report),
+            icon: const Icon(Icons.sync_alt),
+            label: const Text('Change status'),
+          )
+        : FilledButton.icon(
+            onPressed: () => _changeStatus(context, report),
+            icon: const Icon(Icons.sync_alt),
+            label: const Text('Change status'),
+          );
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (canTake) ...[
+              FilledButton.icon(
+                onPressed: () =>
+                    context.read<ReportsBloc>().add(AssigneeSet(report, user)),
+                icon: const Icon(Icons.front_hand_outlined),
+                label: const Text('Claim issue'),
+              ),
+              if (user.isAdmin) ...[
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: () => _assign(context, report),
+                  icon: const Icon(Icons.person_add_alt_1_outlined),
+                  label: const Text('Assign'),
+                ),
+              ],
+              const SizedBox(height: 8),
+            ],
+            changeStatus,
+          ],
+        ),
+      ),
+    );
   }
 }
 

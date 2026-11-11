@@ -68,6 +68,18 @@ class ReportTile extends StatelessWidget {
                     report.location,
                     style: const TextStyle(color: Colors.black54, fontSize: 13),
                   ),
+                  if (report.assigneeLabel case final label?) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.black54,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 6),
                   Row(
                     children: [

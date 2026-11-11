@@ -38,6 +38,14 @@ const accounts = [
     location: 'Kigali Campus',
     role: 'staff',
   },
+  {
+    email: 'admin@campus.edu',
+    password: 'campus123',
+    name: 'Campus Admin',
+    department: 'Facilities',
+    location: 'Kigali Campus',
+    role: 'admin',
+  },
 ];
 
 async function upsert(account) {
@@ -169,7 +177,9 @@ function reports(reporterId) {
 }
 
 const studentId = await upsert(accounts[0]);
-await upsert(accounts[1]);
+for (const account of accounts.slice(1)) {
+  await upsert(account);
+}
 
 const batch = db.batch();
 for (const report of reports(studentId)) {

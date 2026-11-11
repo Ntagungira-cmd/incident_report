@@ -65,7 +65,7 @@ class MyReportsPage extends StatelessWidget {
               ),
             ),
             _ => SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 96),
               sliver: SliverList.separated(
                 itemCount: visible.length,
                 itemBuilder: (_, i) => ReportTile(visible[i]),
@@ -136,7 +136,11 @@ class _ProfileCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              user.isStaff ? 'Staff' : 'Student',
+                              user.isAdmin
+                                  ? 'Admin'
+                                  : user.isStaff
+                                  ? 'Staff'
+                                  : 'Student',
                               style: TextStyle(
                                 color: primary,
                                 fontSize: 11,

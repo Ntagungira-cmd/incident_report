@@ -22,7 +22,7 @@ class HomePage extends StatelessWidget {
 
     return SafeArea(
       child: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 96),
         children: [
           Row(
             children: [

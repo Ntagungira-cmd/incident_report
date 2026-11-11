@@ -46,7 +46,7 @@ class _ShellView extends StatelessWidget {
         index: tab,
         children: const [HomePage(), MyReportsPage(), ProfilePage()],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
         tooltip: 'Report an issue',
@@ -55,7 +55,6 @@ class _ShellView extends StatelessWidget {
       ),
       bottomNavigationBar: BottomAppBar(
         color: Colors.white,
-        shape: const CircularNotchedRectangle(),
         child: Row(
           children: [
             _NavItem(
@@ -72,7 +71,6 @@ class _ShellView extends StatelessWidget {
               index: 1,
               current: tab,
             ),
-            const Expanded(child: SizedBox()),
             _NavItem(
               icon: Icons.person_outline,
               active: Icons.person,

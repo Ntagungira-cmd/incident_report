@@ -4,6 +4,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/auth_bloc.dart';
 import '../validators.dart';
 
+const _departments = [
+  'Computer Science',
+  'Engineering',
+  'Business',
+  'Education',
+  'Health Sciences',
+  'Facilities',
+];
+
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -14,27 +23,31 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
-  final _department = TextEditingController();
   final _location = TextEditingController();
   final _email = TextEditingController();
   final _password = TextEditingController();
+  String? _department;
 
   @override
   void dispose() {
-    for (final c in [_name, _department, _location, _email, _password]) {
+    for (final c in [_name, _location, _email, _password]) {
       c.dispose();
     }
     super.dispose();
   }
 
   void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+    final form = _formKey.currentState!;
+    if (!form.validate()) return;
+    form.save();
+    final department = _department;
+    if (department == null) return;
     context.read<AuthBloc>().add(
       RegisterRequested(
         name: _name.text.trim(),
         email: _email.text.trim(),
         password: _password.text,
-        department: _department.text.trim(),
+        department: department,
         location: _location.text.trim(),
       ),
     );
@@ -81,11 +94,30 @@ class _RegisterPageState extends State<RegisterPage> {
                       Icons.person_outline,
                       requiredField('Name', min: 2),
                     ),
-                    _field(
-                      _department,
-                      'Department',
-                      Icons.school_outlined,
-                      requiredField('Department'),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: DropdownButtonFormField<String>(
+                        initialValue: _department,
+                        isExpanded: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Department',
+                          prefixIcon: Icon(Icons.school_outlined),
+                        ),
+                        items: [
+                          for (final department in _departments)
+                            DropdownMenuItem(
+                              value: department,
+                              child: Text(department),
+                            ),
+                        ],
+                        // The field stores the choice itself; onChanged only enables it.
+                        onChanged: (_) {},
+                        onSaved: (value) => _department = value,
+                        validator: (value) =>
+                            value == null || !_departments.contains(value)
+                            ? 'Department is required'
+                            : null,
+                      ),
                     ),
                     _field(
                       _location,

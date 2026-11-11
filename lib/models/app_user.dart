@@ -1,4 +1,4 @@
-enum UserRole { student, staff }
+enum UserRole { student, staff, admin }
 
 class AppUser {
   const AppUser({
@@ -17,7 +17,10 @@ class AppUser {
   final String location;
   final UserRole role;
 
-  bool get isStaff => role == UserRole.staff;
+  bool get isAdmin => role == UserRole.admin;
+
+  /// Staff and admins see every report and can update status.
+  bool get isStaff => role == UserRole.staff || role == UserRole.admin;
   String get firstName => name.split(' ').first;
 
   factory AppUser.fromMap(String uid, Map<String, dynamic> data) => AppUser(

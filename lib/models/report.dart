@@ -49,6 +49,8 @@ class Report {
     required this.reporterName,
     required this.createdAt,
     this.photoUrl,
+    this.assigneeId,
+    this.assigneeName,
   });
 
   final String id;
@@ -62,6 +64,16 @@ class Report {
   final String reporterId;
   final String reporterName;
   final DateTime createdAt;
+  final String? assigneeId;
+  final String? assigneeName;
+
+  /// Name of the person working on it, or "Unassigned" once work has started.
+  String? get assigneeLabel {
+    final name = assigneeName;
+    if (name != null && name.isNotEmpty) return name;
+    if (status == ReportStatus.inProgress) return 'Unassigned';
+    return null;
+  }
 
   factory Report.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
     final d = doc.data()!;
@@ -83,6 +95,8 @@ class Report {
       reporterId: d['reporterId'] as String,
       reporterName: d['reporterName'] as String,
       createdAt: (d['createdAt'] as Timestamp).toDate(),
+      assigneeId: d['assigneeId'] as String?,
+      assigneeName: d['assigneeName'] as String?,
     );
   }
 

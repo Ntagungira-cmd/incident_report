@@ -13,7 +13,7 @@ class ProfilePage extends StatelessWidget {
     final user = context.read<AppUser>();
     return SafeArea(
       child: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(20, 20, 20, 96),
         children: [
           const SizedBox(height: 12),
           Center(child: UserAvatar(user.name, radius: 44)),
@@ -26,7 +26,11 @@ class ProfilePage extends StatelessWidget {
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
           ),
           Text(
-            user.isStaff ? 'Campus staff' : 'Student',
+            user.isAdmin
+                ? 'Campus admin'
+                : user.isStaff
+                ? 'Campus staff'
+                : 'Student',
             textAlign: TextAlign.center,
             style: const TextStyle(color: Colors.black54),
           ),
